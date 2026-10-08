@@ -71,7 +71,6 @@
             border-radius: 10px;
         }
 
-        /* Message Bubbles */
         .message-row {
             display: flex;
             width: 100%;
@@ -124,13 +123,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Quick Replies */
         .quick-replies {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-top: 8px;
-            margin-left: 48px; /* Align with bot text */
+            margin-left: 48px;
             animation: fadeIn 0.4s ease-in-out;
         }
 
@@ -154,7 +152,6 @@
             transform: translateY(-1px);
         }
 
-        /* Input Area */
         .chat-footer {
             padding: 16px;
             background: #ffffff;
@@ -201,7 +198,6 @@
             cursor: not-allowed;
         }
 
-        /* Typing Indicator */
         .typing-indicator {
             display: flex;
             gap: 4px;
@@ -255,9 +251,7 @@
         </div>
 
         <!-- Chat Body -->
-        <div class="chat-body" id="chatBody">
-            <!-- Messages will be injected here dynamically -->
-        </div>
+        <div class="chat-body" id="chatBody"></div>
 
         <!-- Chat Footer (Input) -->
         <div class="chat-footer">
@@ -273,10 +267,8 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
 
-        // Chat State Management
         let currentState = 'START';
         
-        // Define Chat Menus and Flow
         const menus = {
             START: [
                 { id: 'product', icon: '💻', text: 'Product ပြဿနာ' },
@@ -325,15 +317,11 @@
 
         function addBotMessage(text, options = null) {
             const typingId = showTypingIndicator();
-            
-            // Disable input while typing
             userInput.disabled = true;
             sendBtn.disabled = true;
 
             setTimeout(() => {
                 removeTypingIndicator(typingId);
-                
-                // Add message text formatting (convert **text** to bold)
                 const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 const messageHtml = `
                     <div class="message-row bot">
@@ -352,16 +340,12 @@
                     });
                     optionsHtml += `</div>`;
                     chatBody.insertAdjacentHTML('beforeend', optionsHtml);
-                } else if (currentState === 'AWAITING_ID') {
-                    // Enable text input for specific states
-                    userInput.disabled = false;
-                    userInput.focus();
                 } else {
                     userInput.disabled = false;
+                    userInput.focus();
                 }
-                
                 scrollToBottom();
-            }, 800); // Simulate network delay
+            }, 800);
         }
 
         function addUserMessage(text) {
@@ -373,7 +357,6 @@
             chatBody.insertAdjacentHTML('beforeend', messageHtml);
             scrollToBottom();
             
-            // Remove previous quick replies to clean up UI
             const replies = document.querySelectorAll('.quick-replies');
             replies.forEach(reply => {
                 reply.style.opacity = '0.5';
@@ -403,14 +386,14 @@
                 case 'defect':
                 case 'other_complaint':
                     currentState = 'AWAITING_ID';
-                    addBotMessage("သေချာမှတ်သားထားပါပြီဗျာ။ ချက်ချင်းစစ်ဆေးပြီး အကြောင်းပြန်ပေးနိုင်ရန် လူကြီးမင်းရဲ့ **Order ID** (သို့မဟုတ်) **ဖုန်းနံပါတ်** ကို အောက်ပါ Box တွင် ရိုက်ထည့်ပေးပါ။");
+                    addBotMessage("သေချာမှတ်သားထားပါပြီဗျာ။ ချက်ချင်းစစ်ဆေးပြီး အကြောင်းပြန်ပေးနိုင်ရန် လူကြီးမင်းရဲ့ **Order Name** , **ဖုန်းနံပါတ်** ကို အောက်ပါ Box တွင် ရိုက်ထည့်ပေးပါ။");
                     break;
                 
                 case 'product':
                 case 'delivery':
                 case 'payment':
                     currentState = 'GENERAL';
-                    addBotMessage("ဒီဝန်ဆောင်မှုနဲ့ ပတ်သက်ပြီး အသေးစိတ်ကို သိရှိနိုင်ဖို့ သက်ဆိုင်ရာ ဌာနမှ အမြန်ဆုံး ပြန်လည်ဆက်သွယ်ပေးပါမယ်။", menus.END_OPTIONS);
+                    addBotMessage("ဒီဝန်ဆောင်မှုနဲ့ ပတ်သက်ပြီး အသေးစိတ်ကို သိရှိနိုင်ဖို့ သက်ဆိုင်ရာမှ အမြန်ဆုံး ပြန်လည်ဆက်သွယ်ပေးပါမယ်။", menus.END_OPTIONS);
                     break;
             }
         }
@@ -425,18 +408,28 @@
 
             if (currentState === 'AWAITING_ID') {
                 currentState = 'RESOLUTION';
-                addBotMessage(`ကျေးဇူးတင်ပါတယ်ဗျာ။ အချက်အလက်များ လက်ခံရရှိပါပြီ။ \n\nသက်ဆိုင်ရာတာဝန်ရှိသူမှ မိနစ် (၃၀) အတွင်း ဖုန်းဆက်ပြီး အမြန်ဆုံး ပြန်လည်ဖြေရှင်းပေးပါမည်။ 🙏\n\nနောက်ထပ် ကူညီပေးရမယ့် ကိစ္စများရှိသေးလားဗျ။`, menus.END_OPTIONS);
+                
+                // Formspree သို့ Email ပို့ရန် (YOUR_FORM_ID နေရာတွင် ကိုယ့် Form ID ထည့်ပါ)
+                fetch('https://formspree.io/f/mzedekwa', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        complaint_info: text,
+                        source: 'Castle Tech Customer Care Chatbot'
+                    })
+                }).catch(error => console.error('Error:', error));
+
+                addBotMessage(`ကျေးဇူးတင်ပါတယ်ဗျာ။ အချက်အလက်များ လက်ခံရရှိပါပြီ။ \n\nသက်ဆိုင်ရာတာဝန်ရှိသူမှ ဖုန်းဆက်ပြီး အမြန်ဆုံး ပြန်လည်ဖြေရှင်းပေးပါမည်။ 🙏\n\nနောက်ထပ် ကူညီပေးရမယ့် ကိစ္စများရှိသေးလားဗျ။`, menus.END_OPTIONS);
             } else {
-                // Generic fallback
                 processFlow('start');
             }
         }
 
-        // Event Listeners for Input
         userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                handleTextInput();
-            }
+            if (e.key === 'Enter') handleTextInput();
         });
 
         userInput.addEventListener('input', function() {
@@ -445,11 +438,8 @@
 
         sendBtn.addEventListener('click', handleTextInput);
 
-        // Initialize Chat
         window.onload = () => {
-            setTimeout(() => {
-                processFlow('start');
-            }, 500);
+            setTimeout(() => processFlow('start'), 500);
         };
     </script>
 </body>

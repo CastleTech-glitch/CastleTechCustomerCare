@@ -1,0 +1,453 @@
+`html
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castle Tech Customer Care Chatbot</title>
+    <script src="https://cdn.tailwindcss.com (https://cdn.tailwindcss.com/)"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Padauk', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            background: #ffffff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 640px) {
+            .chat-container {
+                height: 90vh;
+                border-radius: 24px;
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-body::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* Message Bubbles */
+        .message-row {
+            display: flex;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .message-row.bot {
+            justify-content: flex-start;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .bot .message-bubble {
+            background-color: #ffffff;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .user .message-bubble {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Quick Replies */
+        .quick-replies {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+            margin-left: 48px; /* Align with bot text */
+            animation: fadeIn 0.4s ease-in-out;
+        }        .quick-reply-btn {
+            background-color: #ffffff;
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-reply-btn:hover {
+            background-color: #eff6ff;
+            transform: translateY(-1px);
+        }
+
+        /* Input Area */
+        .chat-footer {
+            padding: 16px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 24px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+        }
+
+        .send-btn {
+            background-color: #3b82f6;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: #2563eb;
+        }
+        
+        .send-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+            width: fit-content;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="flex items-center gap-3">
+                <div class="bg-white text-blue-600 rounded-full w-10 h-10 flex justify-center items-center font-bold text-xl">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-lg font-bold leading-tight">Castle Tech</h1>
+                    <p class="text-xs text-blue-200">Customer Care Support</p>
+                </div>
+            </div>
+            <button class="text-white hover:text-gray-200"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+
+        <!-- Chat Body -->
+        <div class="chat-body" id="chatBody">
+            <!-- Messages will be injected here dynamically -->
+        </div>
+
+        <!-- Chat Footer (Input) -->
+        <div class="chat-footer">
+            <input type="text" id="userInput" class="chat-input" placeholder="စာရိုက်ထည့်ရန်..." disabled>
+            <button id="sendBtn" class="send-btn" disabled>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>    <script>
+        const chatBody = document.getElementById('chatBody');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Chat State Management
+        let currentState = 'START';
+        
+        // Define Chat Menus and Flow
+        const menus = {
+            START: [
+                { id: 'product', icon: '💻', text: 'Product ပြဿနာ' },
+                { id: 'complaint', icon: '🔧', text: 'Service ပြဿနာ / တိုင်ကြားရန်' },
+                { id: 'complaint', icon: '👨‍💼', text: 'ဝန်ထမ်းဝန်ဆောင်မှု' },
+                { id: 'delivery', icon: '📦', text: 'Order / Delivery' },
+                { id: 'payment', icon: '💰', text: 'Payment / Price' },
+                { id: 'complaint', icon: '📝', text: 'Complaint တိုင်ကြားရန်' }
+            ],
+            COMPLAINT_TYPES: [
+                { id: 'delay', icon: '⏳', text: 'ဝန်ဆောင်မှု နှောင့်နှေးကြန့်ကြာခြင်း' },
+                { id: 'behavior', icon: '🗣️', text: 'ဝန်ထမ်းအပြောအဆို / ဆက်ဆံရေး' },
+                { id: 'defect', icon: '⚠️', text: 'ပစ္စည်းချို့ယွင်းချက်ရှိခြင်း' },
+                { id: 'other_complaint', icon: '📝', text: 'အခြားအကြောင်းအရာ' }
+            ],
+            END_OPTIONS: [
+                { id: 'start', icon: '🏠', text: 'ပင်မစာမျက်နှာသို့ (Main Menu)' }
+            ]
+        };
+
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const typingHtml = 
+                <div class="message-row bot" id="${id}">
+                    <div class="bot-avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            ;
+            chatBody.insertAdjacentHTML('beforeend', typingHtml);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function addBotMessage(text, options = null) {
+            const typingId = showTypingIndicator();
+            
+            // Disable input while typing
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            setTimeout(() => {
+                removeTypingIndicator(typingId);
+                
+                // Add message text formatting (convert text to bold)
+                const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                const messageHtml = 
+                    <div class="message-row bot">
+                        <div class="bot-avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="message-bubble">${formattedText}</div>
+                    </div>
+                ;
+                chatBody.insertAdjacentHTML('beforeend', messageHtml);
+                
+                if (options && options.length > 0) {
+                    let optionsHtml = <div class="quick-replies">;
+                    options.forEach(opt => {
+                        optionsHtml += <button class="quick-reply-btn" onclick="handleOptionClick('${opt.id}', '${opt.text}')">
+                            <span>${opt.icon}</span> ${opt.text}
+                        </button>;
+                    });
+                    optionsHtml += </div>;
+                    chatBody.insertAdjacentHTML('beforeend', optionsHtml);
+                } else if (currentState === 'AWAITING_ID') {
+                    // Enable text input for specific states                    userInput.disabled = false;
+                    userInput.focus();
+                } else {
+                    userInput.disabled = false;
+                }
+                
+                scrollToBottom();
+            }, 800); // Simulate network delay
+        }
+
+        function addUserMessage(text) {
+            const messageHtml = 
+                <div class="message-row user">
+                    <div class="message-bubble">${text}</div>
+                </div>
+            ;
+            chatBody.insertAdjacentHTML('beforeend', messageHtml);
+            scrollToBottom();
+            
+            // Remove previous quick replies to clean up UI
+            const replies = document.querySelectorAll('.quick-replies');
+            replies.forEach(reply => {
+                reply.style.opacity = '0.5';
+                reply.style.pointerEvents = 'none';
+            });
+        }
+
+        window.handleOptionClick = function(id, text) {
+            addUserMessage(text);
+            processFlow(id);
+        };
+
+        function processFlow(action) {
+            switch(action) {
+                case 'start':
+                    currentState = 'START';
+                    addBotMessage("မင်္ဂလာပါဗျာ 👋\nCastle Tech Customer Care မှ ကြိုဆိုပါတယ်။\nဘာကိစ္စနဲ့ ကူညီပေးရမလဲ?", menus.START);
+                    break;
+                
+                case 'complaint':
+                    currentState = 'COMPLAINT_CATEGORY';
+                    addBotMessage("လူကြီးမင်း ယခုလို အဆင်မပြေဖြစ်သွားတဲ့အတွက် Castle Tech မှ အထူးပင် တောင်းပန်အပ်ပါတယ်ဗျာ 🙏။ \n\nပြဿနာကို အမြန်ဆုံးနဲ့ အကောင်းဆုံး ဖြေရှင်းပေးနိုင်ရန်အတွက် ဘယ်လိုကိစ္စမျိုးလဲဆိုတာ အောက်ပါအချက်များထဲမှ ရွေးချယ်ပေးပါ။", menus.COM (http://menus.COM/)PLAINT_TYPES);
+                    break;
+
+                case 'delay':
+                case 'behavior':
+                case 'defect':
+                case 'other_complaint':
+                    currentState = 'AWAITING_ID';
+                    addBotMessage("သေချာမှတ်သားထားပါပြီဗျာ။ ချက်ချင်းစစ်ဆေးပြီး အကြောင်းပြန်ပေးနိုင်ရန် လူကြီးမင်းရဲ့ Order ID (သို့မဟုတ်) ဖုန်းနံပါတ် ကို အောက်ပါ Box တွင် ရိုက်ထည့်ပေးပါ။");
+                    break;
+                
+                case 'product':
+                case 'delivery':
+                case 'payment':
+                    currentState = 'GENERAL';
+                    addBotMessage("ဒီဝန်ဆောင်မှုနဲ့ ပတ်သက်ပြီး အသေးစိတ်ကို သိရှိနိုင်ဖို့ သက်ဆိုင်ရာ ဌာနမှ အမြန်ဆုံး ပြန်လည်ဆက်သွယ်ပေးပါမယ်။", menus.END_OPTIONS);
+                    break;
+            }
+        }
+
+        function handleTextInput() {
+            const text = userInput.value.trim();
+            if (text === '') return;
+            
+            userInput.value = '';
+            sendBtn.disabled = true;
+            addUserMessage(text);
+
+            if (currentState === 'AWAITING_ID') {
+                currentState = 'RESOLUTION';
+                addBotMessage(ကျေးဇူးတင်ပါတယ်ဗျာ။ အချက်အလက်များ လက်ခံရရှိပါပြီ။ \n\nသက်ဆိုင်ရာတာဝန်ရှိသူမှ မိနစ် (၃၀) အတွင်း ဖုန်းဆက်ပြီး အမြန်ဆုံး ပြန်လည်ဖြေရှင်းပေးပါမည်။ 🙏\n\nနောက်ထပ် ကူညီပေးရမယ့် ကိစ္စများရှိသေးလားဗျ။, menus.END_OPTIONS);
+            } else {
+                // Generic fallback
+                processFlow('start');
+            }
+        }
+
+        // Event Listeners for Input
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleTextInput();
+            }
+        });
+
+        userInput.addEventListener('input', function() {
+            sendBtn.disabled = this.value.trim() === '';
+        });
+
+        sendBtn.addEventListener('click', handleTextInput);
+
+        // Initialize Chat
+        window.onload = () => {
+            setTimeout(() => {
+                processFlow('start');
+            }, 500);
+        };
+    </script>
+</body>
+</html>
+`
